@@ -1,5 +1,6 @@
-from .database_connection import DatabaseConnection
 import pandas
+import typing
+from .database_connection import DatabaseConnection
 
 
 def initialize() -> None:
@@ -88,3 +89,14 @@ def display() -> None:
             print(available)
 
 
+def get_rooms() -> list[dict]:
+    """
+    Gets details of all the rooms from the database and converts it to a list of dictionaries.
+    :return: rooms as list[dict]
+    """
+    with DatabaseConnection('data.db') as connection:
+        cursor = connection.cursor()
+        cursor.execute('SELECT * FROM rooms')
+        rooms = [{'room_no': row[0], 'room_type': row[1], 'price': row[2]} for row in cursor.fetchall()]
+
+        return rooms
