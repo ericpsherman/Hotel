@@ -6,9 +6,14 @@ app = Flask(__name__)
 
 @app.route('/')
 def home():
-    return render_template('home.html')
+    rooms = database.get_rooms()
+    return render_template('home.html', rooms=rooms)
+
+
+@app.route('/room/booking')
+def booking():
+    return render_template('booking.html')
 
 
 if __name__ == '__main__':
     app.run(debug=True)
-
