@@ -10,8 +10,12 @@ def home():
     return render_template('home.html', rooms=rooms)
 
 
-@app.route('/room/booking')
+@app.route('/room/booking', methods=['GET', 'POST'])
 def booking():
+    if request.method == 'POST':
+        date_from = request.form.get('date-from')
+        date_to = request.form.get('date-to')
+        database.show_available_rooms(date_from, date_to)
     return render_template('booking.html')
 
 

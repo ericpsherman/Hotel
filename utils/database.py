@@ -100,3 +100,16 @@ def get_rooms() -> list[dict]:
         rooms = [{'room_no': row[0], 'room_type': row[1], 'price': row[2]} for row in cursor.fetchall()]
 
         return rooms
+
+
+def show_available_rooms(date_from, date_to) -> None:
+    """
+    Displays rooms in the date range given by the user.
+    :param date_from:
+    :param date_to:
+    :return: None
+    """
+    with DatabaseConnection('data.db') as connection:
+        cursor = connection.cursor()
+        for available in cursor.execute(f'SELECT * FROM availability WHERE Date BETWEEN {date_from} AND {date_to}'):
+            print(available)
