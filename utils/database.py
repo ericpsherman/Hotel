@@ -5,26 +5,26 @@ from .database_connection import DatabaseConnection
 DATE_FORMAT = "%Y-%m-%d"
 
 query_dict = {
-            101: [f'SELECT COUNT(*) FROM availability WHERE Date BETWEEN ? AND ? AND "101"=1',
-                  f'UPDATE availability SET "101" = 0 WHERE Date BETWEEN ? AND ?'],
-            102: [f'SELECT COUNT(*) FROM availability WHERE Date BETWEEN ? AND ? AND "102"=1',
-                  f'UPDATE availability SET "102" = 0 WHERE Date BETWEEN ? AND ?'],
-            103: [f'SELECT COUNT(*) FROM availability WHERE Date BETWEEN ? AND ? AND "103"=1',
-                  f'UPDATE availability SET "103" = 0 WHERE Date BETWEEN ? AND ?'],
-            104: [f'SELECT COUNT(*) FROM availability WHERE Date BETWEEN ? AND ? AND "104"=1',
-                  f'UPDATE availability SET "104" = 0 WHERE Date BETWEEN ? AND ?'],
-            105: [f'SELECT COUNT(*) FROM availability WHERE Date BETWEEN ? AND ? AND "105"=1',
-                  f'UPDATE availability SET "105" = 0 WHERE Date BETWEEN ? AND ?'],
-            201: [f'SELECT COUNT(*) FROM availability WHERE Date BETWEEN ? AND ? AND "201"=1',
-                  f'UPDATE availability SET "201" = 0 WHERE Date BETWEEN ? AND ?'],
-            202: [f'SELECT COUNT(*) FROM availability WHERE Date BETWEEN ? AND ? AND "202"=1',
-                  f'UPDATE availability SET "202" = 0 WHERE Date BETWEEN ? AND ?'],
-            203: [f'SELECT COUNT(*) FROM availability WHERE Date BETWEEN ? AND ? AND "203"=1',
-                  f'UPDATE availability SET "203" = 0 WHERE Date BETWEEN ? AND ?'],
-            204: [f'SELECT COUNT(*) FROM availability WHERE Date BETWEEN ? AND ? AND "204"=1',
-                  f'UPDATE availability SET "204" = 0 WHERE Date BETWEEN ? AND ?'],
-            205: [f'SELECT COUNT(*) FROM availability WHERE Date BETWEEN ? AND ? AND "205"=1',
-                  f'UPDATE availability SET "205" = 0 WHERE Date BETWEEN ? AND ?']
+    101: [f'SELECT COUNT(*) FROM availability WHERE Date BETWEEN ? AND ? AND "101"=1',
+          f'UPDATE availability SET "101" = 0 WHERE Date BETWEEN ? AND ?'],
+    102: [f'SELECT COUNT(*) FROM availability WHERE Date BETWEEN ? AND ? AND "102"=1',
+          f'UPDATE availability SET "102" = 0 WHERE Date BETWEEN ? AND ?'],
+    103: [f'SELECT COUNT(*) FROM availability WHERE Date BETWEEN ? AND ? AND "103"=1',
+          f'UPDATE availability SET "103" = 0 WHERE Date BETWEEN ? AND ?'],
+    104: [f'SELECT COUNT(*) FROM availability WHERE Date BETWEEN ? AND ? AND "104"=1',
+          f'UPDATE availability SET "104" = 0 WHERE Date BETWEEN ? AND ?'],
+    105: [f'SELECT COUNT(*) FROM availability WHERE Date BETWEEN ? AND ? AND "105"=1',
+          f'UPDATE availability SET "105" = 0 WHERE Date BETWEEN ? AND ?'],
+    201: [f'SELECT COUNT(*) FROM availability WHERE Date BETWEEN ? AND ? AND "201"=1',
+          f'UPDATE availability SET "201" = 0 WHERE Date BETWEEN ? AND ?'],
+    202: [f'SELECT COUNT(*) FROM availability WHERE Date BETWEEN ? AND ? AND "202"=1',
+          f'UPDATE availability SET "202" = 0 WHERE Date BETWEEN ? AND ?'],
+    203: [f'SELECT COUNT(*) FROM availability WHERE Date BETWEEN ? AND ? AND "203"=1',
+          f'UPDATE availability SET "203" = 0 WHERE Date BETWEEN ? AND ?'],
+    204: [f'SELECT COUNT(*) FROM availability WHERE Date BETWEEN ? AND ? AND "204"=1',
+          f'UPDATE availability SET "204" = 0 WHERE Date BETWEEN ? AND ?'],
+    205: [f'SELECT COUNT(*) FROM availability WHERE Date BETWEEN ? AND ? AND "205"=1',
+          f'UPDATE availability SET "205" = 0 WHERE Date BETWEEN ? AND ?']
 }
 
 
@@ -137,7 +137,8 @@ def is_available(from_date=None, to_date=None, room_class=None) -> tuple[bool, s
             for data in cursor.execute(query, (from_date, to_date)):
                 if data[0] == difference_dates:
                     return True, from_date, to_date, room, difference_dates
-        return False, from_date, to_date, room, difference_dates
+        else:
+            return False, from_date, to_date, room, difference_dates
 
 
 def book_a_room(from_date=None, to_date=None, room=None, difference_dates=None) -> tuple[int, float, int]:
@@ -170,14 +171,18 @@ def get_rooms() -> list[dict]:
         return rooms
 
 
-def show_available_rooms(date_from, date_to) -> None:
+def get_room_details() -> list[dict]:
     """
-    Displays rooms in the date range given by the user.
-    :param date_from:
-    :param date_to:
-    :return: None
+    Gets details of all the rooms and availability from the database and converts it to a list of dictionaries.
+    :return: rooms as list[dict]
     """
     with DatabaseConnection('data.db') as connection:
         cursor = connection.cursor()
-        for available in cursor.execute(f'SELECT * FROM availability WHERE Date BETWEEN ? AND ?', (date_from, date_to)):
-            print(available)
+        cursor.execute(f'SELECT * FROM availability')
+        availability = [{'Date': row[0],
+                         'Room-101': row[1], 'Room-102': row[2], 'Room-103': row[3], 'Room-104': row[4],
+                         'Room-105': row[5],
+                         'Room-201': row[6], 'Room-202': row[7], 'Room-203': row[8], 'Room-204': row[9],
+                         'Room-205': row[10],
+                         } for row in cursor.fetchall()]
+        return availability
