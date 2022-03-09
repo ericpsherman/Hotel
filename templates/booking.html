@@ -14,8 +14,26 @@
             <input type="date" name="date-to"/>
         </div>
         <div>
-            <input type="submit">
+            <label for="room-type"> Select Room Type: </label>
+            <select name="room-type">
+                <option value="A Class">Class A</option>
+                <option value="A Class Premium">Class A Premium</option>
+                <option value="Premium Class">Premium Class</option>
+                <option value="Gold Class">Gold Class</option>
+            </select>
+        </div>
+        <div>
+            <input type="submit" value="Check Availability and Book Room">
         </div>
     </form>
+</div>
+<div>
+    <center>
+        <h2>{{ message }}</h2>
+    </center>
+</div>
+<br>
+<div>
+    <a href="{{ url_for('room_details') }}">Room Details (Admin Only)</a>
 </div>
 {% endblock %}

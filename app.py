@@ -10,27 +10,31 @@ def home():
     return render_template('home.html', rooms=rooms)
 
 
+@app.route('/room/details')
+def room_details():
+    availability = database.get_room_details()
+    return render_template('show_room_details.html', availability=availability)
+
+
 @app.route('/room/booking', methods=['GET', 'POST'])
 def booking():
     if request.method == 'POST':
         date_from = request.form.get('date-from')
         date_to = request.form.get('date-to')
-        print(date_from,date_to)
-        database.show_available_rooms(date_from, date_to)
-    return render_template('booking.html')
+        room_type = request.form.get('room-type')
+        booking_availability = database.is_available(date_from, date_to, room_type)
+        if not booking_availability[0]:
+            return render_template('booking.html', message="No Rooms Available for selected range and room category")
+        else:
+            bill = database.book_a_room(booking_availability[1], booking_availability[2], booking_availability[3],
+                                        booking_availability[4])
+            message = f"""\n\nConfirmed booking!\n
+                        Room Number: {bill[0]}\n
+                        Bill Amount: Rs. {bill[1]}\n
+                        Number of days: {bill[2]}\n\n"""
+            return render_template('booking.html', message=message)
+    return render_template('booking.html', message="Check for room availability and book room")
 
 
 if __name__ == '__main__':
-    # app.run(debug=True)
-    booking_availability = database.is_available('2022-03-09', '2022-03-14', 'A Class')
-    print(booking_availability)
-    bill = None
-    if booking_availability[0]:
-        bill = database.book_a_room(booking_availability[1], booking_availability[2], booking_availability[3],
-                                    booking_availability[4])
-    if bill is not None:
-        print(f"""\n\nConfirmed booking!
-        Room Number: {bill[0]}
-        Bill Amount: Rs. {bill[1]}
-        Number of days: {bill[2]}\n\n""")
-    database.display()
+    app.run(debug=True)
