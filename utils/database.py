@@ -1,12 +1,11 @@
 # import pandas
-import typing
 from datetime import datetime
 from .database_connection import DatabaseConnection
 
 DATE_FORMAT = "%Y-%m-%d"
 
 query_dict = {
-            101: ['SELECT COUNT(*) FROM availability WHERE Date BETWEEN ? AND ? AND "101"=1',
+            101: [f'SELECT COUNT(*) FROM availability WHERE Date BETWEEN ? AND ? AND "101"=1',
                   f'UPDATE availability SET "101" = 0 WHERE Date BETWEEN ? AND ?'],
             102: [f'SELECT COUNT(*) FROM availability WHERE Date BETWEEN ? AND ? AND "102"=1',
                   f'UPDATE availability SET "102" = 0 WHERE Date BETWEEN ? AND ?'],
@@ -16,9 +15,9 @@ query_dict = {
                   f'UPDATE availability SET "104" = 0 WHERE Date BETWEEN ? AND ?'],
             105: [f'SELECT COUNT(*) FROM availability WHERE Date BETWEEN ? AND ? AND "105"=1',
                   f'UPDATE availability SET "105" = 0 WHERE Date BETWEEN ? AND ?'],
-            201: ['SELECT COUNT(*) FROM availability WHERE Date BETWEEN ? AND ? AND "201"=1',
+            201: [f'SELECT COUNT(*) FROM availability WHERE Date BETWEEN ? AND ? AND "201"=1',
                   f'UPDATE availability SET "201" = 0 WHERE Date BETWEEN ? AND ?'],
-            202: ['SELECT COUNT(*) FROM availability WHERE Date BETWEEN ? AND ? AND "202"=1',
+            202: [f'SELECT COUNT(*) FROM availability WHERE Date BETWEEN ? AND ? AND "202"=1',
                   f'UPDATE availability SET "202" = 0 WHERE Date BETWEEN ? AND ?'],
             203: [f'SELECT COUNT(*) FROM availability WHERE Date BETWEEN ? AND ? AND "203"=1',
                   f'UPDATE availability SET "203" = 0 WHERE Date BETWEEN ? AND ?'],
@@ -87,11 +86,9 @@ def initialize() -> None:
 
     with DatabaseConnection('data.db') as connection:
         cursor = connection.cursor()
-        print(length_of_updation)
         data = (data[0] + 30 - length_of_updation[0],)
         cursor.execute('SELECT date(?)', data)
         date = cursor.fetchone()
-        print(date)
         for _ in range(length_of_updation[0]):
             cursor.execute('INSERT OR IGNORE INTO availability VALUES(?, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1)', date)
             data = (data[0] + 1,)
@@ -115,13 +112,13 @@ def display() -> None:
             print(available)
 
 
-def is_available(from_date=None, to_date=None, room_class=None) -> tuple[bool, str, str, int]:
+def is_available(from_date=None, to_date=None, room_class=None) -> tuple[bool, str, str, tuple[int, int], int]:
     """
     Checks if a certain category has rooms available between two dates.
     :param from_date: The starting date of booking
     :param to_date: The ending date of booking
     :param room_class: The category of the room
-    :return: list of tuple of available rooms and their prices -> list[(room_no, price)]
+    :return: tuple regarding the information and availability of room
     """
     with DatabaseConnection('data.db') as connection:
         cursor = connection.cursor()
@@ -129,42 +126,35 @@ def is_available(from_date=None, to_date=None, room_class=None) -> tuple[bool, s
         for room in cursor.execute('SELECT "Room Number", Price FROM rooms WHERE Category=?', (room_class,)):
             room_numbers.append(room)
 
-        print(room_numbers)
-        available_rooms = []
         a = datetime.strptime(from_date, DATE_FORMAT)
         b = datetime.strptime(to_date, DATE_FORMAT)
         delta = b - a
         difference_dates = delta.days + 1
-        print(difference_dates)
 
         for room in room_numbers:
             cursor = connection.cursor()
-            # list_of_availability = []
-            query1 = query_dict[room[0]][0]
-            query2 = query_dict[room[0]][1]
-            for data in cursor.execute(query1, (from_date, to_date)):
+            query = query_dict[room[0]][0]
+            for data in cursor.execute(query, (from_date, to_date)):
                 if data[0] == difference_dates:
-                    return True, from_date, to_date, room[0]
-            else:
-                return False, from_date, to_date, room_numbers[0][0]
-
-            # list_of_availability.append(data)
-        # print(list_of_availability)
+                    return True, from_date, to_date, room, difference_dates
+        return False, from_date, to_date, room, difference_dates
 
 
-def book_a_room(from_date=None, to_date=None, room_number=None):
+def book_a_room(from_date=None, to_date=None, room=None, difference_dates=None) -> tuple[int, float, int]:
     """
     Books a room using specified dates and updates its availability according to the parameters.
     :param from_date: The starting date of booking
     :param to_date: The ending date of booking
-    :param room_class: The category of the room
-    :param room_number: The number of the room
+    :param room: The number and price of the room
+    :param difference_dates: The number of days
     :return: None
     """
     with DatabaseConnection('data.db') as connection:
         cursor = connection.cursor()
-        query = query_dict[room_number][1]
+        query = query_dict[room[0]][1]
         cursor.execute(query, (from_date, to_date))
+        bill_amount = difference_dates * room[1]
+        return room[0], bill_amount, difference_dates
 
 
 def get_rooms() -> list[dict]:
