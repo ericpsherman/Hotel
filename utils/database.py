@@ -1,6 +1,32 @@
-import pandas
+# import pandas
 import typing
+from datetime import datetime
 from .database_connection import DatabaseConnection
+
+DATE_FORMAT = "%Y-%m-%d"
+
+query_dict = {
+            101: [f"SELECT COUNT(*) FROM availability WHERE Date BETWEEN ? AND ? AND '101'=1",
+                  f"UPDATE TABLE availability SET '101' = 0 WHERE Date BETWEEN ? AND ?"],
+            102: [f"SELECT COUNT(*) FROM availability WHERE Date BETWEEN ? AND ? AND '102'=1",
+                  f"UPDATE TABLE availability SET '102' = 0 WHERE Date BETWEEN ? AND ?"],
+            103: [f"SELECT COUNT(*) FROM availability WHERE Date BETWEEN ? AND ? AND '103'=1",
+                  f"UPDATE TABLE availability SET '103' = 0 WHERE Date BETWEEN ? AND ?"],
+            104: [f"SELECT COUNT(*) FROM availability WHERE Date BETWEEN ? AND ? AND '104'=1",
+                  f"UPDATE TABLE availability SET '104' = 0 WHERE Date BETWEEN ? AND ?"],
+            105: [f"SELECT COUNT(*) FROM availability WHERE Date BETWEEN ? AND ? AND '105'=1",
+                  f"UPDATE TABLE availability SET '105' = 0 WHERE Date BETWEEN ? AND ?"],
+            201: [f"SELECT COUNT(*) FROM availability WHERE Date BETWEEN ? AND ? AND '201'=1",
+                  f"UPDATE TABLE availability SET '201' = 0 WHERE Date BETWEEN ? AND ?"],
+            202: [f"SELECT COUNT(*) FROM availability WHERE Date BETWEEN ? AND ? AND '202'=1",
+                  f"UPDATE TABLE availability SET '202' = 0 WHERE Date BETWEEN ? AND ?"],
+            203: [f"SELECT COUNT(*) FROM availability WHERE Date BETWEEN ? AND ? AND '203'=1",
+                  f"UPDATE TABLE availability SET '203' = 0 WHERE Date BETWEEN ? AND ?"],
+            204: [f"SELECT COUNT(*) FROM availability WHERE Date BETWEEN ? AND ? AND '204'=1",
+                  f"UPDATE TABLE availability SET '204' = 0 WHERE Date BETWEEN ? AND ?"],
+            205: [f"SELECT COUNT(*) FROM availability WHERE Date BETWEEN ? AND ? AND '205'=1",
+                  f"UPDATE TABLE availability SET '205' = 0 WHERE Date BETWEEN ? AND ?"]
+}
 
 
 def initialize() -> None:
@@ -87,6 +113,51 @@ def display() -> None:
         cursor = connection.cursor()
         for available in cursor.execute('SELECT * from availability'):
             print(available)
+
+
+def is_available(from_date=None, to_date=None, room_class=None) -> list[tuple]:
+    """
+    Checks if a certain category has rooms available between two dates.
+    :param from_date: The starting date of booking
+    :param to_date: The ending date of booking
+    :param room_class: The category of the room
+    :return: list of tuple of available rooms and their prices -> list[(room_no, price)]
+    """
+    with DatabaseConnection('data.db') as connection:
+        cursor = connection.cursor()
+        room_numbers = []
+        for room in cursor.execute('SELECT "Room Number", Price FROM rooms WHERE Category=?', (room_class,)):
+            room_numbers.append(room)
+
+        print(room_numbers)
+        available_rooms = []
+        a = datetime.strptime(from_date, DATE_FORMAT)
+        b = datetime.strptime(to_date, DATE_FORMAT)
+        delta = b - a
+        print(delta.days)
+
+        cursor = connection.cursor()
+        list_of_availability = []
+        for data in cursor.execute('SELECT * FROM availability WHERE Date BETWEEN ? and ? AND 101=1', (from_date,
+                                                                                                       to_date)):
+            list_of_availability.append(data)
+        print(list_of_availability)
+
+
+def book_a_room(from_date=None, to_date=None, room_class=None):
+    """
+    Books a room using specified dates and updates its availability according to the parameters.
+    :param from_date: The starting date of booking
+    :param to_date: The ending date of booking
+    :param room_class: The category of the room
+    :return: None
+    """
+    with DatabaseConnection('data.db') as connection:
+        cursor = connection.cursor()
+        room_numbers = []
+        for room in cursor.execute('SELECT "Room Number", Price FROM rooms WHERE Category=?', (room_class,)):
+            room_numbers.append(room)
+        print(room_numbers)
 
 
 def get_rooms() -> list[dict]:
