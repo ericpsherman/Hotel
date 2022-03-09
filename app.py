@@ -16,4 +16,5 @@ def booking():
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    #app.run(debug=True)
+    database.is_available('2022-03-09', '2022-03-14', 'A Class')
