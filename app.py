@@ -6,6 +6,7 @@ app = Flask(__name__)
 
 @app.route('/')
 def home():
+    database.initialize()
     rooms = database.get_rooms()
     return render_template('home.html', rooms=rooms)
 
@@ -28,12 +29,14 @@ def booking():
         else:
             bill = database.book_a_room(booking_availability[1], booking_availability[2], booking_availability[3],
                                         booking_availability[4])
-            message = f"""\n\nConfirmed booking!\n
-                        Room Number: {bill[0]}\n
-                        Bill Amount: Rs. {bill[1]}\n
-                        Number of days: {bill[2]}\n\n"""
+            message = [f"Confirmed booking!",
+                       f"Room Number: {bill[0]}",
+                       f"Bill Amount: Rs. {bill[1]}",
+                       f"Number of days: {bill[2]}",
+                       f"Check-in date: {date_from}",
+                       f"Check-out date: {date_to}"]
             return render_template('booking.html', message=message)
-    return render_template('booking.html', message="Check for room availability and book room")
+    return render_template('booking.html', message=[f"Check for room availability and book room"])
 
 
 if __name__ == '__main__':

@@ -29,7 +29,9 @@
 </div>
 <div>
     <center>
-        <h2>{{ message }}</h2>
+        {% for item in message %}
+        <h3>{{ item }}</h3>
+        {% endfor %}
     </center>
 </div>
 <br>
