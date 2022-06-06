@@ -1,6 +1,6 @@
 import sqlite3
 
-
+#New Comment
 class DatabaseConnection:
     def __init__(self, host):
         self.connection = None
